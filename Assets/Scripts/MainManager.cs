@@ -11,6 +11,7 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text HighScoreText;
     public GameObject GameOverText;
     
     private bool m_Started = false;
@@ -36,6 +37,11 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+
+        // We Load the Highscore in Start(), as it is the First thing to get called each Session and Scene Reload.
+        // And then we simply add the Highscore value. Below we check for New Highscore, and save it there, and then Load the Highscore again. 
+        GameManager.Instance.LoadHighScore();
+        HighScoreText.text = "Best Score : " + GameManager.Instance.maxScorePlayerName + " : " + GameManager.Instance.HighScore;    //
     }
 
     private void Update()
@@ -55,6 +61,15 @@ public class MainManager : MonoBehaviour
         }
         else if (m_GameOver)
         {
+            // We check if the current score value is Greater than Current Highscore. 
+            // If it is, then we add that new score value to our Highscore. 
+            // And we also Save our HighScore here, bcoz we this is the New HighScore we got. (We only want to Save a Highscore when it exceeds its previous one)
+            if(m_Points > GameManager.Instance.HighScore)
+            {
+                GameManager.Instance.SaveHighScore();
+                HighScoreText.text = "Best Score : " + GameManager.Instance.maxScorePlayerName + " : " + GameManager.Instance.HighScore;
+            } //
+
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
@@ -66,11 +81,20 @@ public class MainManager : MonoBehaviour
     {
         m_Points += point;
         ScoreText.text = $"Score : {m_Points}";
+        
+        // This line adds score to our GameManager Class
+        GameManager.Instance.score = m_Points;  //
     }
 
     public void GameOver()
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+    }
+
+    // Function to go back to Main Menu Scene
+    public void BackToMenu()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex - 1); //
     }
 }
